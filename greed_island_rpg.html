@@ -1,0 +1,730 @@
+<!-- ... existing code ... -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Greed Island: Hunter Escape (Android 16 Optimized)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glow-gold { text-shadow: 0 0 12px rgba(234, 179, 8, 0.7); }
+        .glow-box { box-shadow: 0 0 25px rgba(16, 185, 129, 0.2); }
+        ::-webkit-scrollbar { width: 3px; height: 3px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between select-none overflow-x-hidden">
+
+    <!-- Mobile App Container (Optimized for Android 16 / Modern Smart Phones) -->
+    <div id="app" class="max-w-md w-full mx-auto bg-slate-900 min-h-screen flex flex-col shadow-2xl relative overflow-hidden border-x border-slate-800 pb-safe">
+
+        <!-- Top Header Status Bar -->
+        <header class="bg-slate-900/95 backdrop-blur-md sticky top-0 z-30 px-4 py-3.5 border-b border-slate-800 flex items-center justify-between shadow-sm">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-900/40 text-white">GI</div>
+                <div>
+                    <h1 class="font-extrabold text-xs tracking-wider text-emerald-400">GREED ISLAND</h1>
+                    <p class="text-[10px] text-slate-400 font-medium" id="player-title">Hunter Pemula (Lv. 1)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-xs">
+                <div class="bg-slate-800/90 px-2.5 py-1 rounded-full border border-slate-700/80 flex items-center space-x-1 shadow-inner">
+                    <span class="text-yellow-400 font-bold">🪙</span>
+                    <span id="player-jenny" class="font-bold text-yellow-300">2,500</span>
+                </div>
+                <div class="bg-slate-800/90 px-2.5 py-1 rounded-full border border-slate-700/80 flex items-center space-x-1 shadow-inner">
+                    <span class="text-emerald-400 font-bold">✨</span>
+                    <span id="player-nen" class="font-bold text-emerald-300">50/50</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dynamic Screen Content -->
+        <main id="main-content" class="flex-1 overflow-y-auto p-4 pb-28 space-y-4">
+            <!-- Dynamic view rendered via JavaScript -->
+        </main>
+
+        <!-- Modal / Popup Dialog -->
+        <div id="modal-container" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div id="modal-box" class="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl transform transition-all scale-95 opacity-0">
+                <!-- Dynamic Modal Content -->
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar (Android Touch Optimized) -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/80 px-3 py-2.5 z-30 flex justify-around items-center shadow-2xl">
+            <button onclick="switchTab('explore'); playAudio('click');" id="nav-explore" class="flex flex-col items-center py-1.5 px-4 rounded-2xl transition-all text-emerald-400 bg-slate-800/90 shadow-md">
+                <span class="text-xl">🗺️</span>
+                <span class="text-[10px] font-bold mt-0.5 tracking-wide">Jelajah</span>
+            </button>
+            <button onclick="switchTab('binder'); playAudio('click');" id="nav-binder" class="flex flex-col items-center py-1.5 px-4 rounded-2xl transition-all text-slate-400 hover:text-slate-200">
+                <span class="text-xl">📖</span>
+                <span class="text-[10px] font-bold mt-0.5 tracking-wide">Binder</span>
+            </button>
+            <button onclick="switchTab('spells'); playAudio('click');" id="nav-spells" class="flex flex-col items-center py-1.5 px-4 rounded-2xl transition-all text-slate-400 hover:text-slate-200">
+                <span class="text-xl">🔮</span>
+                <span class="text-[10px] font-bold mt-0.5 tracking-wide">Sihir</span>
+            </button>
+            <button onclick="switchTab('escape'); playAudio('click');" id="nav-escape" class="flex flex-col items-center py-1.5 px-4 rounded-2xl transition-all text-slate-400 hover:text-slate-200">
+                <span class="text-xl">🚪</span>
+                <span class="text-[10px] font-bold mt-0.5 tracking-wide">Keluar</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // --- AUDIO & HAPTIC FEEDBACK ENGINE (Android Optimized) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playAudio(type) {
+            try {
+                if (navigator.vibrate) navigator.vibrate(35);
+                if (!audioCtx) return;
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                let now = audioCtx.currentTime;
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'win') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'hit') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                }
+            } catch(e) {}
+        }
+
+        // --- GAME STATE ---
+        let gameState = {
+            playerName: "Gon Freecss",
+            level: 1,
+            exp: 0,
+            maxExp: 100,
+            hp: 100,
+            maxHp: 100,
+            nen: 50,
+            maxNen: 50,
+            jenny: 2500,
+            activeTab: 'explore',
+            binder: {
+                restricted: {}, 
+                free: []       
+            },
+            spells: {
+                'Gain': 2,
+                'Book': 1,
+                'Trace': 1,
+                'Breath': 0,
+                'Steal': 1
+            },
+            defeatedGenthru: false,
+            gameWon: false
+        };
+
+        // --- MASTER CARD DATABASE ---
+        const cardDatabase = {
+            "0": { id: "0", name: "Blue Planet", type: "Restricted", rarity: "S", desc: "Permata legendaris yang memancarkan cahaya biru abadi.", icon: "💎", value: 50000 },
+            "1": { id: "1", name: "Paladin's Necklace", type: "Restricted", rarity: "S", desc: "Kalung suci yang otomatis memantulkan efek sihir kutukan.", icon: "📿", value: 45000 },
+            "2": { id: "2", name: "Breath of Archangel", type: "Restricted", rarity: "S", desc: "Menyembuhkan seluruh penyakit parah dan cedera fatal.", icon: "👼", value: 60000 },
+            "3": { id: "3", name: "Risk Dice", type: "Restricted", rarity: "A", desc: "Dadu ajaib penuh risiko yang memberi hadiah atau malapetaka.", icon: "🎲", value: 20000 },
+            "4": { id: "4", name: "King's White Cuisine", type: "Restricted", rarity: "A", desc: "Bahan makanan lezat yang meningkatkan energi Nen permanen.", icon: "🍲", value: 25000 },
+            "5": { id: "5", name: "Blood-Sucking Butterfly", type: "Restricted", rarity: "B", desc: "Serangga langka penghisap aura kehidupan musuh.", icon: "🦋", value: 15000 },
+            "6": { id: "6", name: "Listing", type: "Restricted", rarity: "B", desc: "Mencari daftar kepemilikan kartu target di seluruh pulau.", icon: "📜", value: 12000 },
+            "7": { id: "7", name: "Soundless Stone", type: "Restricted", rarity: "C", desc: "Batu misterius yang meredam seluruh suara di area sekitar.", icon: "🪨", value: 8000 },
+            "8": { id: "8", name: "TSE-TSE Fly", type: "Restricted", rarity: "C", desc: "Membuat musuh tertidur lelap dalam pertarungan.", icon: "🦟", value: 7500 },
+            "9": { id: "9", name: "Sure-Hit Bug", type: "Restricted", rarity: "C", desc: "Memastikan serangan berikutnya mengenai sasaran empuk.", icon: "🐞", value: 5000 },
+            
+            "f1": { id: "f1", name: "Gold Dust", type: "Free", rarity: "D", desc: "Debu emas murni yang dapat dijual seharga 1,500 Jenny.", icon: "✨", value: 1500 },
+            "f2": { id: "f2", name: "Stealth Herb", type: "Free", rarity: "D", desc: "Tanaman obat penambah 30 HP saat darurat.", icon: "🌿", value: 800 },
+            "f3": { id: "f3", name: "Nen Crystal", type: "Free", rarity: "C", desc: "Kristal murni pengisi 25 poin energi Nen.", icon: "🔮", value: 2000 },
+            "f4": { id: "f4", name: "Giant Beetle", type: "Free", rarity: "D", desc: "Kumbang tangguh dari hutan Masadora.", icon: "🪲", value: 1000 }
+        };
+
+        // --- MISSIONS & LOCATIONS ---
+        const locations = [
+            {
+                id: 'forest',
+                name: 'Hutan Sunyi (Antokia)',
+                levelReq: 1,
+                desc: 'Hutan lebat tempat monster liar dan bandit pemula berkeliaran.',
+                icon: '🌲',
+                monsters: [
+                    { name: 'Grizzly Bear', hp: 40, atk: 8, exp: 35, reward: 500 },
+                    { name: 'Forest Bandit', hp: 55, atk: 12, exp: 50, reward: 800 }
+                ],
+                dropPool: ['f1', 'f2', 'f4', '8', '9']
+            },
+            {
+                id: 'masadora',
+                name: 'Kota Sihir Masadora',
+                levelReq: 3,
+                desc: 'Kota pengrajin dan penyihir. Penuh teka-teki dan monster elemen.',
+                icon: '🏰',
+                monsters: [
+                    { name: 'Golem Batu', hp: 90, atk: 18, exp: 90, reward: 1500 },
+                    { name: 'Penyihir Sesat', hp: 75, atk: 22, exp: 110, reward: 1800 }
+                ],
+                dropPool: ['f3', '6', '7', '5', '4']
+            },
+            {
+                id: 'soufrabi',
+                name: 'Pelabuhan Soufrabi',
+                levelReq: 6,
+                desc: 'Kota pantai mewah kasino dan sarang penjahat berbahaya.',
+                icon: '🌊',
+                monsters: [
+                    { name: 'Bajak Laut G.I.', hp: 130, atk: 28, exp: 160, reward: 3000 },
+                    { name: 'Chimera Crab', hp: 160, atk: 32, exp: 200, reward: 4500 }
+                ],
+                dropPool: ['3', '4', 'f3', '2']
+            },
+            {
+                id: 'genthru_lair',
+                name: 'Markas Bomber (Genthru)',
+                levelReq: 9,
+                desc: 'Tempat persembunyian Genthru si Bomber. Pertarungan hidup mati!',
+                icon: '💣',
+                isBoss: true,
+                boss: { name: 'Genthru "The Bomber"', hp: 350, atk: 45, exp: 600, reward: 15000 },
+                dropPool: ['0', '1', '2']
+            }
+        ];
+
+        window.onload = function() {
+            switchTab('explore');
+        };
+
+        function switchTab(tab) {
+            gameState.activeTab = tab;
+            ['explore', 'binder', 'spells', 'escape'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === tab) {
+                    btn.className = "flex flex-col items-center py-1.5 px-4 rounded-2xl transition-all text-emerald-400 bg-slate-800/90 shadow-md";
+                } else {
+                    btn.className = "flex flex-col items-center py-1.5 px-4 rounded-2xl transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+            renderContent();
+        }
+
+        function renderContent() {
+            const container = document.getElementById('main-content');
+            container.innerHTML = "";
+            updateHeaderStats();
+
+            if (gameState.activeTab === 'explore') {
+                renderExploreView(container);
+            } else if (gameState.activeTab === 'binder') {
+                renderBinderView(container);
+            } else if (gameState.activeTab === 'spells') {
+                renderSpellsView(container);
+            } else if (gameState.activeTab === 'escape') {
+                renderEscapeView(container);
+            }
+        }
+
+        function updateHeaderStats() {
+            document.getElementById('player-jenny').innerText = gameState.jenny.toLocaleString();
+            document.getElementById('player-nen').innerText = `${gameState.nen}/${gameState.maxNen}`;
+            let title = "Hunter Pemula";
+            if (gameState.level >= 3) title = "Hunter Pemburu Kartu";
+            if (gameState.level >= 6) title = "Master Nen";
+            if (gameState.defeatedGenthru) title = "Juara Greed Island";
+            document.getElementById('player-title').innerText = `${title} (Lv. ${gameState.level})`;
+        }
+
+        function renderExploreView(container) {
+            let html = `
+                <div class="space-y-3.5">
+                    <div class="bg-gradient-to-r from-emerald-900/50 to-slate-800/70 p-4 rounded-2xl border border-emerald-500/30 shadow-lg">
+                        <h2 class="font-bold text-emerald-400 text-sm mb-1">Misi Petualangan Pulau</h2>
+                        <p class="text-xs text-slate-300 leading-relaxed">Pilih wilayah misi untuk berburu monster, tingkatkan level, dan kumpulkan Kartu Restricted (00-09) untuk syarat keluar game!</p>
+                        <div class="mt-3 flex items-center justify-between text-xs bg-slate-950/70 px-3 py-2.5 rounded-xl border border-emerald-900/30">
+                            <span class="text-slate-400 font-medium">Progress Kartu Restricted:</span>
+                            <span class="font-bold text-yellow-400">${Object.keys(gameState.binder.restricted).length} / 10 Terkumpul</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+            `;
+
+            locations.forEach(loc => {
+                const isLocked = gameState.level < loc.levelReq;
+                html += `
+                    <div class="bg-slate-800/80 border ${isLocked ? 'border-slate-700/40 opacity-60' : 'border-slate-700/80 hover:border-emerald-500/50'} rounded-2xl p-4 transition-all flex flex-col justify-between shadow-md">
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center space-x-2.5">
+                                    <span class="text-2xl p-1 bg-slate-900 rounded-xl border border-slate-700">${loc.icon}</span>
+                                    <h3 class="font-bold text-slate-100 text-sm">${loc.name}</h3>
+                                </div>
+                                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${isLocked ? 'bg-red-950/60 text-red-300 border border-red-800/50' : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/50'}">
+                                    ${isLocked ? `Lv. ${loc.levelReq} Diperlukan` : 'Terbuka'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-3.5 leading-relaxed">${loc.desc}</p>
+                        </div>
+                        <button onclick="${isLocked ? `playAudio('click'); showMsg('Peringatan', 'Level kamu belum mencukupi untuk misi ini! Selesaikan misi sebelumnya terlebih dahulu.')` : `playAudio('click'); startMission('${loc.id}')`}" 
+                            class="w-full py-3 rounded-xl font-bold text-xs transition-all active:scale-[0.98] ${isLocked ? 'bg-slate-700/60 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30'}">
+                            ${isLocked ? 'Terkunci' : (loc.isBoss ? '⚠️ Lawan Boss Genthru' : 'Mulai Berburu')}
+                        </button>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function startMission(locId) {
+            const loc = locations.find(l => l.id === locId);
+            if (!loc) return;
+            let target = loc.isBoss ? loc.boss : loc.monsters[Math.floor(Math.random() * loc.monsters.length)];
+            
+            openModal(`
+                <div class="text-center space-y-3.5">
+                    <div class="w-16 h-16 bg-slate-800 rounded-2xl mx-auto flex items-center justify-center text-3xl border border-slate-700 shadow-inner">
+                        ${loc.isBoss ? '💣' : '👾'}
+                    </div>
+                    <h3 class="font-bold text-base text-slate-100">Pertempuran Melawan ${target.name}</h3>
+                    <p class="text-xs text-slate-400">${loc.isBoss ? 'Pertempuran penentuan melawan pemimpin Bomber!' : 'Monster liar menyerangmu di area ' + loc.name}</p>
+                    
+                    <div id="battle-stats" class="bg-slate-950 p-3.5 rounded-xl text-left text-xs space-y-2 border border-slate-800 shadow-inner">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400 font-medium">HP Musuh:</span>
+                            <span id="boss-hp" class="font-bold text-red-400">${target.hp} / ${target.hp}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400 font-medium">HP Kamu:</span>
+                            <span id="player-hp-battle" class="font-bold text-emerald-400">${gameState.hp} / ${gameState.maxHp}</span>
+                        </div>
+                    </div>
+
+                    <div id="battle-log" class="text-xs text-slate-300 bg-slate-800/60 p-3 rounded-xl h-20 overflow-y-auto text-left border border-slate-700/60 font-mono">
+                        Pertempuran dimulai! Gunakan serangan fisik atau jurus Nen.
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button onclick="attackEnemy('${locId}', ${JSON.stringify(target).replace(/"/g, '&quot;')}, false)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs shadow-md active:scale-95 transition-transform">Serangan Fisik</button>
+                        <button onclick="attackEnemy('${locId}', ${JSON.stringify(target).replace(/"/g, '&quot;')}, true)" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-xl text-xs shadow-md active:scale-95 transition-transform">Jurus Jajanken (15)</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        let currentBattle = null;
+        function attackEnemy(locId, target, useNen) {
+            playAudio('hit');
+            let log = document.getElementById('battle-log');
+            if (!currentBattle || currentBattle.name !== target.name) {
+                currentBattle = { ...target, currentHp: target.hp };
+            }
+
+            let playerDmg = Math.floor(Math.random() * 15) + 12;
+            if (useNen) {
+                if (gameState.nen < 15) {
+                    log.innerHTML = `<span class="text-red-400 font-bold">Energi Nen tidak cukup!</span><br>` + log.innerHTML;
+                    return;
+                }
+                gameState.nen -= 15;
+                playerDmg *= 2.2;
+                playerDmg = Math.floor(playerDmg);
+            }
+
+            currentBattle.currentHp -= playerDmg;
+            updateHeaderStats();
+
+            if (currentBattle.currentHp <= 0) {
+                playAudio('win');
+                let rewardJenny = target.reward;
+                let rewardExp = target.exp;
+                gameState.jenny += rewardJenny;
+                gameState.exp += rewardExp;
+
+                let leveledUp = false;
+                if (gameState.exp >= gameState.maxExp) {
+                    gameState.level++;
+                    gameState.exp -= gameState.maxExp;
+                    gameState.maxExp = Math.floor(gameState.maxExp * 1.5);
+                    gameState.maxHp += 25;
+                    gameState.hp = gameState.maxHp;
+                    gameState.maxNen += 15;
+                    gameState.nen = gameState.maxNen;
+                    leveledUp = true;
+                }
+
+                const loc = locations.find(l => l.id === locId);
+                let droppedCard = null;
+                if (loc && loc.dropPool.length > 0) {
+                    const randomCardId = loc.dropPool[Math.floor(Math.random() * loc.dropPool.length)];
+                    droppedCard = cardDatabase[randomCardId];
+                    if (droppedCard) {
+                        if (droppedCard.type === 'Restricted') {
+                            if (!gameState.binder.restricted[droppedCard.id]) {
+                                gameState.binder.restricted[droppedCard.id] = droppedCard;
+                            }
+                        } else {
+                            gameState.binder.free.push(droppedCard);
+                        }
+                    }
+                }
+
+                if (locId === 'genthru_lair') {
+                    gameState.defeatedGenthru = true;
+                }
+
+                closeModal();
+                showMsg("Kemenangan Epik! 🎉", `
+                    Kamu berhasil mengalahkan ${target.name}!<br><br>
+                    🎁 Hadiah:<br>
+                    • +${rewardJenny.toLocaleString()} Jenny<br>
+                    • +${rewardExp} EXP ${leveledUp ? '<br>✨ <b>LEVEL UP! Naik ke Level ' + gameState.level + '!</b>' : ''}<br>
+                    ${droppedCard ? `🃏 Kartu Ditemukan: <b>[${droppedCard.id}] ${droppedCard.name}</b> (${droppedCard.type})` : ''}
+                `);
+                renderContent();
+                return;
+            }
+
+            let enemyDmg = Math.floor(Math.random() * target.atk) + 5;
+            gameState.hp -= enemyDmg;
+            if (gameState.hp < 0) gameState.hp = 0;
+
+            document.getElementById('boss-hp').innerText = `${currentBattle.currentHp} / ${target.hp}`;
+            document.getElementById('player-hp-battle').innerText = `${gameState.hp} / ${gameState.maxHp}`;
+            updateHeaderStats();
+
+            log.innerHTML = `Kamu menyerang ${target.name} sebesar ${playerDmg} DMG. ${target.name} menyerang balik sebesar ${enemyDmg} DMG.<br>` + log.innerHTML;
+
+            if (gameState.hp <= 0) {
+                closeModal();
+                gameState.hp = gameState.maxHp; 
+                gameState.jenny = Math.max(0, gameState.jenny - 500);
+                showMsg("Kamu Pingsan! 💀", "Kamu kehabisan HP dan dievakuasi ke kota terdekat. Kehilangan 500 Jenny sebagai biaya pengobatan.");
+                renderContent();
+            }
+        }
+
+        function renderBinderView(container) {
+            let restrictedCount = Object.keys(gameState.binder.restricted).length;
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-r from-teal-900/50 to-slate-800/70 p-4 rounded-2xl border border-teal-500/30 shadow-lg">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <h2 class="font-bold text-teal-400 text-sm">Binder Kartu Greed Island</h2>
+                            <span class="text-[10px] bg-slate-950 px-2.5 py-1 rounded-full text-emerald-300 font-extrabold border border-slate-800">00 - 09 Restricted</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">Kumpulkan seluruh 10 Kartu Restricted Utama untuk memenuhi syarat keluar dari game Greed Island!</p>
+                        <div class="mt-3 w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                            <div class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: ${(restrictedCount / 10) * 100}%"></div>
+                        </div>
+                        <div class="text-right text-[10px] text-slate-400 font-semibold mt-1">${restrictedCount} / 10 Kartu Utama Terkumpul</div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Slot Restricted (00 - 09)</h3>
+                        <div class="grid grid-cols-2 gap-2.5">
+            `;
+
+            for (let i = 0; i <= 9; i++) {
+                let cardId = i.toString();
+                let card = gameState.binder.restricted[cardId];
+                if (card) {
+                    html += `
+                        <div onclick="playAudio('click'); inspectCard('${card.id}', 'restricted')" class="bg-slate-800/90 border border-emerald-500/50 rounded-2xl p-3 flex items-center space-x-3 cursor-pointer hover:bg-slate-800 transition-all shadow-md active:scale-95">
+                            <span class="text-2xl p-2 bg-emerald-950/70 rounded-xl border border-emerald-500/30">${card.icon}</span>
+                            <div class="overflow-hidden">
+                                <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Slot #${card.id} • ${card.rarity}</span>
+                                <h4 class="font-bold text-xs text-slate-100 truncate">${card.name}</h4>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3 flex items-center space-x-3 opacity-50">
+                            <span class="text-xl p-2 bg-slate-950 rounded-xl border border-slate-800 text-slate-600">❓</span>
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-500">Slot #${i}</span>
+                                <h4 class="font-bold text-xs text-slate-500">Kosong</h4>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Slot Kartu Bebas (Free Slots)</h3>
+                        <div class="grid grid-cols-2 gap-2.5">
+            `;
+
+            if (gameState.binder.free.length === 0) {
+                html += `<div class="col-span-2 text-center py-8 text-xs text-slate-500 bg-slate-900/40 rounded-2xl border border-slate-800/60">Belum ada kartu bebas di-binder. Jelajahi area untuk menemukannya!</div>`;
+            } else {
+                gameState.binder.free.forEach((card, index) => {
+                    html += `
+                        <div onclick="playAudio('click'); inspectFreeCard(${index})" class="bg-slate-800/75 border border-slate-700/80 rounded-2xl p-3 flex items-center space-x-3 cursor-pointer hover:bg-slate-800 transition-all shadow-sm active:scale-95">
+                            <span class="text-2xl p-2 bg-slate-900 rounded-xl border border-slate-700">${card.icon}</span>
+                            <div class="overflow-hidden">
+                                <span class="text-[9px] font-bold text-teal-400 uppercase tracking-wider">Free Card</span>
+                                <h4 class="font-bold text-xs text-slate-100 truncate">${card.name}</h4>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div></div></div>`;
+            container.innerHTML = html;
+        }
+
+        function inspectCard(cardId, type) {
+            let card = cardDatabase[cardId];
+            if (!card) return;
+            openModal(`
+                <div class="text-center space-y-3.5">
+                    <div class="w-16 h-16 bg-emerald-950 rounded-2xl mx-auto flex items-center justify-center text-3xl border border-emerald-500/40 shadow-lg">
+                        ${card.icon}
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold px-2.5 py-1 bg-emerald-900/50 text-emerald-300 rounded-full border border-emerald-700/60">Slot #${card.id} • Rarity ${card.rarity}</span>
+                        <h3 class="font-bold text-base text-slate-100 mt-1.5">${card.name}</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800 leading-relaxed">${card.desc}</p>
+                    <div class="text-xs text-yellow-400 font-bold">Nilai Jual: ${card.value.toLocaleString()} Jenny</div>
+                    <button onclick="playAudio('click'); closeModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs active:scale-95 transition-transform">Tutup</button>
+                </div>
+            `);
+        }
+
+        function inspectFreeCard(index) {
+            let card = gameState.binder.free[index];
+            if (!card) return;
+            openModal(`
+                <div class="text-center space-y-3.5">
+                    <div class="w-16 h-16 bg-slate-800 rounded-2xl mx-auto flex items-center justify-center text-3xl border border-slate-700 shadow-lg">
+                        ${card.icon}
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold px-2.5 py-1 bg-slate-800 text-teal-300 rounded-full border border-slate-700">Free Card</span>
+                        <h3 class="font-bold text-base text-slate-100 mt-1.5">${card.name}</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800 leading-relaxed">${card.desc}</p>
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button onclick="playAudio('click'); sellFreeCard(${index})" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-xs shadow-md active:scale-95 transition-transform">Jual (${card.value.toLocaleString()} Jenny)</button>
+                        <button onclick="playAudio('click'); closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs active:scale-95 transition-transform">Tutup</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function sellFreeCard(index) {
+            let card = gameState.binder.free[index];
+            if (!card) return;
+            gameState.jenny += card.value;
+            gameState.binder.free.splice(index, 1);
+            closeModal();
+            showMsg("Kartu Terjual", `Berhasil menjual ${card.name} seharga ${card.value.toLocaleString()} Jenny.`);
+            renderContent();
+        }
+
+        function renderSpellsView(container) {
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-r from-purple-900/50 to-slate-800/70 p-4 rounded-2xl border border-purple-500/30 shadow-lg">
+                        <h2 class="font-bold text-purple-400 text-sm mb-1">Kartu Sihir (Spell Cards)</h2>
+                        <p class="text-xs text-slate-300 leading-relaxed">Gunakan kartu sihir khusus untuk mendukung petualanganmu dan memulihkan kondisi hunter.</p>
+                    </div>
+
+                    <div class="space-y-3">
+            `;
+
+            const spellList = [
+                { name: 'Gain', count: gameState.spells['Gain'], desc: 'Mendapatkan satu kartu acak berkualitas tinggi.', icon: '⚡', action: 'useSpellGain()' },
+                { name: 'Book', count: gameState.spells['Book'], desc: 'Meningkatkan kapasitas energi Nen maksimal +10.', icon: '📖', action: 'useSpellBook()' },
+                { name: 'Breath of Archangel (Spell)', count: gameState.spells['Breath'], desc: 'Memulihkan 100% HP dan menyembuhkan kelelahan.', icon: '👼', action: 'useSpellBreath()' }
+            ];
+
+            spellList.forEach(spell => {
+                html += `
+                    <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl p-2 bg-slate-900 rounded-xl border border-slate-700">${spell.icon}</span>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-100">${spell.name} <span class="text-purple-400 font-semibold">(Dimiliki: ${spell.count})</span></h4>
+                                <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">${spell.desc}</p>
+                            </div>
+                        </div>
+                        <button onclick="playAudio('click'); ${spell.action}" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs transition-all shadow-md shrink-0 active:scale-95">Gunakan</button>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function useSpellGain() {
+            if (gameState.spells['Gain'] <= 0) {
+                showMsg("Stok Habis", "Kamu tidak memiliki kartu sihir Gain.");
+                return;
+            }
+            gameState.spells['Gain']--;
+            const allKeys = Object.keys(cardDatabase);
+            const randomKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+            const card = cardDatabase[randomKey];
+            if (card.type === 'Restricted') {
+                gameState.binder.restricted[card.id] = card;
+            } else {
+                gameState.binder.free.push(card);
+            }
+            showMsg("Gain Berhasil! ⚡", `Kartu sihir diaktifkan! Kamu mendapatkan: <b>[${card.id}] ${card.name}</b>`);
+            renderContent();
+        }
+
+        function useSpellBook() {
+            if (gameState.spells['Book'] <= 0) {
+                showMsg("Stok Habis", "Kamu tidak memiliki kartu sihir Book.");
+                return;
+            }
+            gameState.spells['Book']--;
+            gameState.maxNen += 10;
+            gameState.nen = gameState.maxNen;
+            showMsg("Book Diaktifkan! 📖", "Energi Nen maksimalmu meningkat sebesar +10 poin!");
+            renderContent();
+        }
+
+        function useSpellBreath() {
+            if (gameState.spells['Breath'] <= 0) {
+                showMsg("Stok Habis", "Kamu tidak memiliki kartu Breath of Archangel. Temukan di Boss Genthru atau area S.");
+                return;
+            }
+            gameState.spells['Breath']--;
+            gameState.hp = gameState.maxHp;
+            showMsg("Breath of Archangel! 👼", "Kesehatanmu pulih sepenuhnya dan tubuhmu terasa sangat bertenaga!");
+            renderContent();
+        }
+
+        function renderEscapeView(container) {
+            let restrictedCount = Object.keys(gameState.binder.restricted).length;
+            let canEscape = (restrictedCount >= 10 && gameState.defeatedGenthru);
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-r from-amber-900/50 to-slate-800/70 p-4 rounded-2xl border border-amber-500/30 shadow-lg">
+                        <h2 class="font-bold text-amber-400 text-sm mb-1">Gerbang Keluar Greed Island</h2>
+                        <p class="text-xs text-slate-300 leading-relaxed">Sesuai aturan resmi Greed Island, untuk keluar dari game dan menyelesaikan permainan, kamu harus memenuhi dua syarat mutlak:</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="bg-slate-800/80 border ${restrictedCount >= 10 ? 'border-emerald-500/50' : 'border-slate-700/80'} p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">${restrictedCount >= 10 ? '✅' : '❌'}</span>
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-100">Koleksi 10 Kartu Restricted (00-09)</h4>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Progress: ${restrictedCount} / 10 Kartu Utama</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800/80 border ${gameState.defeatedGenthru ? 'border-emerald-500/50' : 'border-slate-700/80'} p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xl">${gameState.defeatedGenthru ? '✅' : '❌'}</span>
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-100">Mengalahkan Genthru "The Bomber"</h4>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Status: ${gameState.defeatedGenthru ? 'Telah Dikalahkan' : 'Belum Dilawan di Markas Bomber'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="${canEscape ? 'playAudio(\'win\'); triggerEscapeSequence()' : `playAudio(\'click\'); showMsg('Syarat Belum Terpenuhi', 'Kamu harus mengumpulkan 10 Kartu Restricted dan mengalahkan Genthru terlebih dahulu sebelum dapat menggunakan hak keluar game!')`}" 
+                            class="w-full py-4 rounded-2xl font-bold text-sm transition-all active:scale-95 ${canEscape ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 shadow-xl shadow-amber-500/30' : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'}">
+                            🚪 Gunakan Hak Keluar Greed Island (Selesai)
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function triggerEscapeSequence() {
+            openModal(`
+                <div class="text-center space-y-4 py-2">
+                    <div class="w-20 h-20 bg-amber-500/20 text-yellow-400 rounded-3xl mx-auto flex items-center justify-center text-4xl border border-amber-500/40 animate-bounce shadow-xl">
+                        🌟
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">Selamat, Hunter!</span>
+                        <h3 class="font-bold text-lg text-slate-100 mt-1">Greed Island Berhasil Diselesaikan!</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Kamu telah melengkapi seluruh 10 Kartu Restricted utama dan menaklukkan Genthru. Sesuai aturan game, kamu memilih kartu untuk dibawa pulang ke dunia nyata dan resmi menamatkan petualangan Greed Island!
+                    </p>
+                    <button onclick="playAudio('click'); closeModal(); switchTab('explore');" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-xs shadow-lg active:scale-95 transition-transform">Main Lagi / Jelajahi Bebas</button>
+                </div>
+            `);
+        }
+
+        function openModal(htmlContent) {
+            const container = document.getElementById('modal-container');
+            const box = document.getElementById('modal-box');
+            box.innerHTML = htmlContent;
+            container.classList.remove('hidden');
+            setTimeout(() => {
+                box.className = "bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl transform transition-all scale-100 opacity-100";
+            }, 10);
+        }
+
+        function closeModal() {
+            const container = document.getElementById('modal-container');
+            const box = document.getElementById('modal-box');
+            box.className = "bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl transform transition-all scale-95 opacity-0";
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 200);
+        }
+
+        function showMsg(title, message) {
+            openModal(`
+                <div class="text-center space-y-3.5">
+                    <h3 class="font-bold text-base text-slate-100">${title}</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">${message}</p>
+                    <button onclick="playAudio('click'); closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs active:scale-95 transition-transform">Mengerti</button>
+                </div>
+            `);
+        }
+    </script>
+</body>
+</html>
